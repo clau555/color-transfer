@@ -34,7 +34,7 @@ def intro(fichier1, fichier2):
     print()
     print("=== Image B ===\nFormat : {}\nTaille : {}\nMode : {}".format(im2.format, im2.size, im2.mode))
     print()
-    if im1.size==im2.size and im1.mode==im2.mode :
+    if im1.size==im2.size :
         print("Fichiers OK")
         print()
         res = True
