@@ -44,7 +44,7 @@ def order_data_from_vector(pixel_data: tuple, vector: tuple, save_ranks: bool = 
 
 
 def cost(pixel_data1: tuple, pixel_data2: tuple, vector: tuple) -> float:
-    pixel_data1_ordered = order_data_from_vector(pixel_data1, vector, True)
+    pixel_data1_ordered = order_data_from_vector(pixel_data1, vector)
     pixel_data2_ordered = order_data_from_vector(pixel_data2, vector)
     distance = 0.0
 
@@ -83,7 +83,7 @@ def color_transfer(im1: Image, im2: Image, loop_number: int) -> Image:
 
     best_vector = get_best_cost_vector(im1, im2, loop_number)
 
-    ordered_pixel_data1 = order_data_from_vector(tuple(im1.getdata()), best_vector)
+    ordered_pixel_data1 = order_data_from_vector(tuple(im1.getdata()), best_vector, True)
     ordered_pixel_data2 = order_data_from_vector(tuple(im2.getdata()), best_vector)
 
     pixel_data_output = [None] * len(ordered_pixel_data1)
