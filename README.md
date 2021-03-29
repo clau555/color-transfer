@@ -36,4 +36,5 @@ best vector : (28, 13, 16)
 quality : 0.3462233905332733
 ```
 
+L'image de sortie est affichée lors de la fin du programme et est enregistrée dans le fichier output.png.
 <img src="output.png" width="400"/>
