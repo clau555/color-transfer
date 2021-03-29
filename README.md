@@ -5,18 +5,23 @@ Ici, un pixel de l'image source ne peut être utilisé qu'une fois.<br/>
 L'opération revient donc à réorganiser les pixels de l'image source
 de manière à ce que le résultat ressemble le plus possible à l'image cible.
 
+## Tailles des images
+
+Ce qui est dit ci-dessus implique que les deux images doivent avoir la même taille pour le traitement.
+Dans le cas où les images d'entrée ont une taille différente, on coupera la plus grande pour l'amener à la taille de la plus petite.
+
 ## Utilisation
 
 <img src="monarch.png" width="350"/> <img src="tulips.png" width="350"/>
 
-Faisons un transfert des couleurs de tulips sur monarch, avec 10 tirages de vecteur.
+Faisons un transfert des couleurs de tulips sur monarch, avec 10 tirages de vecteurs aléatoires.
 ```
 python color_transfer.py monarch.png tulips.png 10
 ```
 Sortie
 ```
 initialization...
-0       vector : (-38, -14, -36)                cost : 2784094891.0     best cost : 2784094891.0
+0       vector : (-38, -14, -36)        cost : 2784094891.0     best cost : 2784094891.0
 1       vector : (-18, 49, 46)          cost : 4268187515.0     best cost : 2784094891.0
 2       vector : (11, 27, 36)           cost : 3058036397.0     best cost : 2784094891.0
 3       vector : (7, -24, -16)          cost : 4192963159.0     best cost : 2784094891.0
