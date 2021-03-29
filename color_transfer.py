@@ -43,12 +43,12 @@ def order_data_from_vector(pixel_data: tuple, vector: tuple, save_ranks: bool = 
     return tuple(pixel_data_ordered)
 
 
-def cost(pixel_data1: tuple, pixel_data2: tuple, vector: tuple) -> float:
-    pixel_data1_ordered = order_data_from_vector(pixel_data1, vector)
-    pixel_data2_ordered = order_data_from_vector(pixel_data2, vector)
+def cost(target_pixel_data: tuple, source_pixel_data: tuple, vector: tuple) -> float:
+    pixel_data1_ordered = order_data_from_vector(target_pixel_data, vector)
+    pixel_data2_ordered = order_data_from_vector(source_pixel_data, vector)
     distance = 0.0
 
-    for i in range(len(pixel_data1)):
+    for i in range(len(target_pixel_data)):
         distance += (pixel_data1_ordered[i][0] - pixel_data2_ordered[i][0]) ** 2 + \
                     (pixel_data1_ordered[i][1] - pixel_data2_ordered[i][1]) ** 2 + \
                     (pixel_data1_ordered[i][2] - pixel_data2_ordered[i][2]) ** 2
@@ -56,17 +56,17 @@ def cost(pixel_data1: tuple, pixel_data2: tuple, vector: tuple) -> float:
     return distance
 
 
-def get_best_cost_vector(im1: Image, im2: Image, loop_number: int) -> tuple:
-    pixel_data1 = tuple(im1.getdata())
-    pixel_data2 = tuple(im2.getdata())
+def get_best_cost_vector(target_im: Image, source_im: Image, loop_number: int) -> tuple:
+    target_pixel_data = tuple(target_im.getdata())
+    source_pixel_data = tuple(source_im.getdata())
 
     print("initialization...")
     best_vector = random_vector(99)
-    best_cost = cost(pixel_data1, pixel_data2, best_vector)
+    best_cost = cost(target_pixel_data, source_pixel_data, best_vector)
     costs = []
     for i in range(loop_number):
         vector = random_vector(99)
-        current_cost = cost(pixel_data1, pixel_data2, vector)
+        current_cost = cost(target_pixel_data, source_pixel_data, vector)
         if current_cost < best_cost:
             best_cost = current_cost
             best_vector = vector
@@ -79,36 +79,37 @@ def get_best_cost_vector(im1: Image, im2: Image, loop_number: int) -> tuple:
     return best_vector
 
 
-def color_transfer(im1: Image, im2: Image, loop_number: int) -> Image:
+def color_transfer(target_im: Image, source_im: Image, loop_number: int) -> Image:
 
-    best_vector = get_best_cost_vector(im1, im2, loop_number)
+    best_vector = get_best_cost_vector(target_im, source_im, loop_number)
 
-    ordered_pixel_data1 = order_data_from_vector(tuple(im1.getdata()), best_vector, True)
-    ordered_pixel_data2 = order_data_from_vector(tuple(im2.getdata()), best_vector)
+    target_ordered_pixel_data = order_data_from_vector(tuple(target_im.getdata()), best_vector, True)
+    source_ordered_pixel_data = order_data_from_vector(tuple(source_im.getdata()), best_vector)
 
-    pixel_data_output = [None] * len(ordered_pixel_data1)
-    for i in range(len(ordered_pixel_data1)):
-        pixel_data_output[ranks[i]] = ordered_pixel_data2[i]  # magic
+    pixel_data_output = [None] * len(target_ordered_pixel_data)
+    for i in range(len(target_ordered_pixel_data)):
+        pixel_data_output[ranks[i]] = source_ordered_pixel_data[i]  # magic
 
-    im_output = Image.new(im1.mode, im1.size)
+    im_output = Image.new(target_im.mode, target_im.size)
     im_output.putdata(pixel_data_output)
 
     return im_output
 
 
-def main(file_name1: str, file_name2: str, loop_number: int = 10) -> None:
-    im1 = Image.open(file_name1).convert("RGB")
-    im2 = Image.open(file_name2).convert("RGB")
+def main(target_file_name: str, source_file_name: str, loop_number: int = 10) -> None:
+    target_im = Image.open(target_file_name).convert("RGB")
+    source_im = Image.open(source_file_name).convert("RGB")
 
-    if im1.size != im2.size:
-        sys.exit("The two images must have the same dimensions")
+    if target_im.size != source_im.size:
+        if target_im.size[0] * target_im.size[1] > source_im.size[0] * source_im.size[1]:
+            target_im = target_im.crop((0, 0, source_im.size[0], source_im.size[1]))
+        else:
+            source_im = source_im.crop((0, 0, target_im.size[0], target_im.size[1]))
 
-    im_output = color_transfer(im1, im2, loop_number)
+    im_output = color_transfer(target_im, source_im, loop_number)
 
     im_output.save("output.png")
     im_output.show()
-    im1.close()
-    im2.close()
 
 
 if __name__ == "__main__":
