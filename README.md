@@ -1,5 +1,8 @@
 # Transfert de couleurs entre images par coupe 1D
 
+Un transfert de couleur consiste à transférer les couleurs d'une image sur une autre.
+Cela amène à réorganiser les pixels de l'image servant de palette de couleur de manière à ce que le résultat soit le plus proche possible de l'image visée.
+
 ## Utilisation
 
 <img src="monarch.png" width="300"/> <img src="tulips.png" width="300"/>
@@ -37,4 +40,5 @@ quality : 0.3462233905332733
 ```
 
 L'image de sortie est affichée lors de la fin du programme et est enregistrée dans le fichier output.png.
+
 <img src="output.png" width="400"/>
