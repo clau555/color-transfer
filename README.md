@@ -2,7 +2,7 @@
 
 ## Utilisation
 
-[alt text](monarch.png) [alt text](tulips.png)
+![monarch](monarch.png) ![tulips](tulips.png)
 
 Faisons un transfert des couleurs de tulips sur monarch, avec 20 tirages de vecteur.
 ```
@@ -36,4 +36,4 @@ best vector : (28, 13, 16)
 quality : 0.3462233905332733
 ```
 
-[alt text](output.png)
+![output](output.png)
