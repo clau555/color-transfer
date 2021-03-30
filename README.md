@@ -5,10 +5,9 @@ Ici, un pixel de l'image source ne peut être utilisé qu'une fois.<br/>
 L'opération revient donc à réorganiser les pixels de l'image source
 de manière à ce que le résultat ressemble le plus possible à l'image cible.
 
-## Taille des images
+## Dépendances
 
-Ce qui est dit ci-dessus implique que les deux images doivent avoir la même taille pour le traitement.<br/>
-Dans le cas où les images d'entrée ont une taille différente, on coupera la plus grande pour l'amener à la taille de la plus petite.
+- [Pillow](https://pillow.readthedocs.io/en/stable/installation.html)
 
 ## Utilisation
 
