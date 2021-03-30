@@ -73,7 +73,7 @@ def cost(target_pixel_data: tuple, source_pixel_data: tuple, vector: tuple) -> f
     pixel_data2_ordered = order_data_from_vector(source_pixel_data, vector)
     distances_sum = 0.0
 
-    # calculs our distance sum
+    # calculs the distances sum
     for i in range(len(target_pixel_data)):
         distances_sum += (pixel_data1_ordered[i][0] - pixel_data2_ordered[i][0]) ** 2 + \
                     (pixel_data1_ordered[i][1] - pixel_data2_ordered[i][1]) ** 2 + \
@@ -124,11 +124,11 @@ def color_transfer(target_im: Image, source_im: Image, loop_number: int) -> Imag
     :return: Image
     """
 
-    # we choose the vector which has the lowest cost when ordering the two images,
+    # we choose the vector which has the lowest cost when ordering the two images
     best_vector = best_cost_vector(target_im, source_im, loop_number)
 
     # we order our images with the best vector
-    # meaning that pixels of the same rank of the target and the source
+    # meaning that same rank pixels of the target and the source
     # will be as close as possible
     target_ordered_pixel_data = order_data_from_vector(tuple(target_im.getdata()), best_vector, True)
     source_ordered_pixel_data = order_data_from_vector(tuple(source_im.getdata()), best_vector)
@@ -149,7 +149,7 @@ def main(target_file_name: str, source_file_name: str, loop_number: int = 10) ->
     source_im = Image.open(source_file_name).convert("RGB")
 
     # because the two images must be the same size for our transfert
-    # we crop the biggest if they they are not
+    # we crop the biggest if they are not
     if target_im.size != source_im.size:
         if target_im.size[0] * target_im.size[1] > source_im.size[0] * source_im.size[1]:
             target_im = target_im.crop((0, 0, source_im.size[0], source_im.size[1]))
