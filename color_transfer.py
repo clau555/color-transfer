@@ -158,7 +158,7 @@ def main(target_file_name: str, source_file_name: str, loop_number: int = 10) ->
     target_im: Image = Image.open(target_file_name).convert("RGB")
     source_im: Image = Image.open(source_file_name).convert("RGB")
 
-    # because the two images must be the same size for our transfert,
+    # because the two images must be at the same size for our transfer,
     # we crop the biggest if they are not
     if target_im.size != source_im.size:
         if target_im.size[0] * target_im.size[1] > source_im.size[0] * source_im.size[1]:
