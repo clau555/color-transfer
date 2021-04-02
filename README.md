@@ -13,26 +13,29 @@ de manière à ce que le résultat ressemble le plus possible à l'image cible.
 
 <img src="monarch.png" width="350"/> <img src="tulips.png" width="350"/>
 
-Faisons un transfert des couleurs de tulips sur monarch, avec 10 tirages de vecteurs aléatoires.
+Faisons un transfert des couleurs de tulips sur monarch, avec 40 tirages de vecteurs aléatoires.
 ```
-python color_transfer.py monarch.png tulips.png 10
+python color_transfer.py monarch.png tulips.png 40
 ```
 Sortie
 ```
 initialization...
-0       vector : (-38, -14, -36)        cost : 2784094891.0     best cost : 2784094891.0
-1       vector : (-18, 49, 46)          cost : 4268187515.0     best cost : 2784094891.0
-2       vector : (11, 27, 36)           cost : 3058036397.0     best cost : 2784094891.0
-3       vector : (7, -24, -16)          cost : 4192963159.0     best cost : 2784094891.0
-4       vector : (-15, -40, 39)         cost : 6917477127.0     best cost : 2784094891.0
-5       vector : (31, -42, 48)          cost : 5106665427.0     best cost : 2784094891.0
-6       vector : (-26, 49, 16)          cost : 5383925421.0     best cost : 2784094891.0
-7       vector : (-18, 10, -1)          cost : 5281800411.0     best cost : 2784094891.0
-8       vector : (15, -31, 4)           cost : 6920590813.0     best cost : 2784094891.0
-9       vector : (-16, -34, 22)         cost : 4226440309.0     best cost : 2784094891.0
+0       vector : (-22, -4, 5)           cost : 3940552947.0     best cost : 3294499155.0
+1       vector : (-40, 46, -46)         cost : 4994295771.0     best cost : 3294499155.0
+2       vector : (-12, -11, 34)         cost : 6614810727.0     best cost : 3294499155.0
+.
+.
+.
+11      vector : (-20, -5, -14)         cost : 2783448129.0     best cost : 2783448129.0
+.
+.
+.
+37      vector : (37, -27, -45)         cost : 6385495563.0     best cost : 2783448129.0
+38      vector : (-5, 26, 33)           cost : 3802899065.0     best cost : 2783448129.0
+39      vector : (40, -24, -23)         cost : 7649534025.0     best cost : 2783448129.0
 
-best vector : (-38, -14, -36)
-quality : 0.40229150461694835
+best vector : (-20, -5, -14)
+quality : 0.36387159268828795
 ```
 
 L'image de sortie est affichée lors de la fin du programme et est enregistrée dans le fichier output.png.
