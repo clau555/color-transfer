@@ -8,7 +8,6 @@ de manière à ce que le résultat ressemble le plus possible à l'image cible.
 ## Dépendances
 
 - [Pillow](https://pypi.org/project/Pillow/) ```pip3 install pillow```
-- [tqdm](https://pypi.org/project/tqdm/) ```pip3 install tqdm```
 
 ## Utilisation
 
