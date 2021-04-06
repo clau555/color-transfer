@@ -44,7 +44,7 @@ def order_data_from_vector(pixel_data: tuple[tuple[int, int, int]], vector: tupl
         ranked_pixel_data.append([pixel_data[i], dot_product, i])
 
     # sorts pixels according to their dot product
-    ranked_pixel_data.sort(key=lambda pixel: pixel[1])
+    ranked_pixel_data.sort(key=lambda data: data[1])
 
     # reconstructs the ranked pixels data
     pixel_data_ordered: list[tuple[int, int, int]] = [(0, 0, 0)] * len(pixel_data)
@@ -87,24 +87,24 @@ def cost(target_pixel_data: tuple[tuple[int, int, int]], source_pixel_data: tupl
     return distances_sum
 
 
-def best_cost_vector(target_im: Image, source_im: Image, loop_number: int) -> tuple[int, int, int]:
+def best_cost_vector(target_im: Image, source_im: Image, n: int) -> tuple[int, int, int]:
     """
-    Orders multiple times the source and target pixels according to a random vector.\n
+    Orders n times the source and target pixels according to a random vector.\n
     Returns the vector with the lowest associated cost.\n
     :param target_im: Image
     :param source_im: Image
-    :param loop_number: int
+    :param n: int
     :return: tuple[int, int, int]
     """
     target_pixel_data: tuple[tuple[int, int, int]] = tuple(target_im.getdata())
     source_pixel_data: tuple[tuple[int, int, int]] = tuple(source_im.getdata())
 
-    print("initialization...")
+    print("initialization...\n")
     best_vector: tuple[int, int, int] = random_vector(100)
     best_cost: float = cost(target_pixel_data, source_pixel_data, best_vector)
     costs: list[float] = []
 
-    for i in range(loop_number):
+    for i in range(n):
         current_vector: tuple[int, int, int] = random_vector(100)
         current_cost: float = cost(target_pixel_data, source_pixel_data, current_vector)
 
@@ -114,8 +114,8 @@ def best_cost_vector(target_im: Image, source_im: Image, loop_number: int) -> tu
 
         costs.append(current_cost)
 
-        print("{}\tvector : {}\t\tcost : {}\tbest cost : {}"
-              .format(i, current_vector, current_cost, best_cost))
+        print("{}\tvector : {}\t\tcost : {}\t\tbest cost : {}"
+                   .format(i + 1, current_vector, current_cost, best_cost))
 
     quality: float = min(costs) / max(costs)
     print("\nbest vector : {}\nquality : {}".format(best_vector, quality))
@@ -139,12 +139,12 @@ def color_transfer(target_im: Image, source_im: Image, loop_number: int) -> Imag
     # we order our images with the best vector, meaning that same rank pixels
     # of the target and the source will be as close as possible
     target_ordered_pixel_data: tuple[tuple[int, int, int]] = order_data_from_vector(tuple(target_im.getdata()),
-                                                                                    best_vector, True)
+                                                                                    best_vector, True)  # ranks save
     source_ordered_pixel_data: tuple[tuple[int, int, int]] = order_data_from_vector(tuple(source_im.getdata()),
                                                                                     best_vector)
 
     # orders pixels of the source according to their associated target pixels
-    pixel_data_output: list[Union[int]] = [0] * len(target_ordered_pixel_data)
+    pixel_data_output: list[int] = [0] * len(target_ordered_pixel_data)
     for i in range(len(target_ordered_pixel_data)):
         pixel_data_output[ranks[i]] = source_ordered_pixel_data[i]  # magic
 
