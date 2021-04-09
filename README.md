@@ -7,7 +7,7 @@ de manière à ce que le résultat ressemble le plus possible à l'image cible.
 
 ## Dépendances
 
-- [Pillow](https://pypi.org/project/Pillow/) ```pip3 install pillow```
+- [Pillow](https://pypi.org/project/Pillow/) ```pip install pillow```
 
 ## Utilisation
 
@@ -42,3 +42,9 @@ quality : 0.36387159268828795
 L'image de sortie est affichée lors de la fin du programme et est enregistrée dans le fichier output.png.
 
 <img src="output.png" width="600" alt="img"/>
+
+## Limites
+
+L'algorithme utilisé ici est naïf et ne tire aucun avantage de rapidité de calcul
+qu'aurait pu donner la bibliothèque numpy de python par exemple.<br/>
+De ce fait, le script est d'autant plus lent que la taille des images à analyser est grande.
