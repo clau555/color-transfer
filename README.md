@@ -1,4 +1,4 @@
-# Transfert de couleurs entre images par coupe 1D
+# Transfert optimal de couleurs entre images par coupe 1D
 
 Un transfert de couleur consiste à transférer les couleurs d'une image source sur une image cible.<br/>
 Ici, un pixel de l'image source ne peut être utilisé qu'une fois.<br/>
