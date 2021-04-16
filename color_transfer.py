@@ -64,7 +64,7 @@ def cost(target_pixel_data: tuple[tuple[int, int, int]], source_pixel_data: tupl
     """
     Calculates the distances between every pixels
     of the same rank from the target and source
-    (ordered according to the vector pass in argument).\n
+    (ordered according to the vector passed in argument).\n
     Returns the sum of these distances, which is the cost.\n
     :param target_pixel_data: tuple[tuple[int, int, int]]
     :param source_pixel_data: tuple[tuple[int, int, int]]
