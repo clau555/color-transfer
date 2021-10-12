@@ -5,177 +5,176 @@ from typing import Union
 from PIL import Image
 
 
-# is used to store the orignal rank of each pixels of the target image
-ranks: list[int] = []
+indexes: list[int] = []  # is used to store the orignal indexes of each pixels of the target image
 
 
-def random_vector(amplitude: int) -> tuple[int, int, int]:
+def random_vector(amplitude: int = 100) -> tuple[int, int, int]:
     """
     Returns a random vector.\n
     :param amplitude: int
     :return: tuple[int, int, int]
     """
-    minimum: int = int(-amplitude / 2)
-    maximum: int = int(amplitude / 2)
+    maximum: int = amplitude // 2
+    minimum: int = -maximum
     return randint(minimum, maximum), randint(minimum, maximum), randint(minimum, maximum)
 
 
-def order_data_from_vector(pixel_data: tuple[tuple[int, int, int]], vector: tuple[int, int, int],
-                           save_ranks: bool = False) -> tuple[tuple[int, int, int]]:
+def order_pixels_from_vector(pixels: tuple[tuple[int, int, int]],
+                             vector: tuple[int, int, int],
+                             save_indexes: bool = False) -> tuple[tuple[int, int, int]]:
     """
-    Orders all pixels in pixel_data according
-    to their orthographic projection on the vector.\n
-    :param pixel_data: tuple[tuple[int, int, int]]
+    Orders a pixel set according to their orthographic projection on a vector.\n
+    :param pixels: tuple[tuple[int, int, int]]
     :param vector: tuple[int, int, int]
-    :param save_ranks: bool
+    :param save_indexes: bool
     :return: tuple[tuple[int, int, int]]
     """
-    global ranks
+    global indexes
 
-    # each element of ranked_pixel_data is composed as follow :
-    # [ pixel: tuple, dot_product: int, rank: int ]
-    # dot_product is the dot product of pixel and vector
-    # rank is the original rank of the pixel in its image
-    ranked_pixel_data: list[list[Union[tuple, int]]] = []
-    for i in range(len(pixel_data)):
-        dot_product: int = pixel_data[i][0] * vector[0] + \
-                           pixel_data[i][1] * vector[1] + \
-                           pixel_data[i][2] * vector[2]
-        ranked_pixel_data.append([pixel_data[i], dot_product, i])
+    """
+    each element of ranked_pixels is composed as follow :
+    [   
+        pixel: tuple[int, int, int],
+        dot_product: int,
+        index: int
+    ]
+    pixel is the original image pixel rgb values
+    dot_product is the dot product of pixel and vector
+    index is the original index of the pixel in its image
+    """
+    ranked_pixels: list[list[Union[tuple, int]]] = []
+    for i in range(len(pixels)):
+
+        dot_product: int = pixels[i][0] * vector[0] + \
+                           pixels[i][1] * vector[1] + \
+                           pixels[i][2] * vector[2]
+
+        ranked_pixels.append([pixels[i], dot_product, i])
 
     # sorts pixels according to their dot product
-    ranked_pixel_data.sort(key=lambda data: data[1])
+    ranked_pixels.sort(key=lambda data: data[1])
 
-    # reconstructs the ranked pixels data
-    pixel_data_ordered: list[tuple[int, int, int]] = [(0, 0, 0)] * len(pixel_data)
-    for i in range(len(pixel_data)):
-        pixel_data_ordered[i] = ranked_pixel_data[i][0]
+    # reconstructs the ranked pixels
+    ordered_pixels: list[tuple[int, int, int]] = [(0, 0, 0)] * len(pixels)
+    for i in range(len(pixels)):
+        ordered_pixels[i] = ranked_pixels[i][0]
 
         # saves original pixels ranks after sorting
         # this is used later when reorganising sorted pixels
-        if save_ranks:
-            ranks.append(ranked_pixel_data[i][2])
+        if save_indexes:
+            indexes.append(ranked_pixels[i][2])
 
-    return tuple(pixel_data_ordered)
+    return tuple(ordered_pixels)
 
 
-def cost(target_pixel_data: tuple[tuple[int, int, int]], source_pixel_data: tuple[tuple[int, int, int]],
+def cost(pixels1: tuple[tuple[int, int, int]],
+         pixels2: tuple[tuple[int, int, int]],
          vector: tuple[int, int, int]) -> float:
     """
-    Calculates the distances between every pixels
-    of the same rank from the target and source
-    (ordered according to the vector passed in argument).\n
-    Returns the sum of these distances, which is the cost.\n
-    :param target_pixel_data: tuple[tuple[int, int, int]]
-    :param source_pixel_data: tuple[tuple[int, int, int]]
+    Returns the cost between two sets of pixels.\n
+    :param pixels1: tuple[tuple[int, int, int]]
+    :param pixels2: tuple[tuple[int, int, int]]
     :param vector: tuple[int, int, int]
     :return: float
     """
 
-    # before calculating the distances, we have to order them
-    # with our vector to associate the future cost with the vector
-    pixel_data1_ordered: tuple[tuple[int, int, int]] = order_data_from_vector(target_pixel_data, vector)
-    pixel_data2_ordered: tuple[tuple[int, int, int]] = order_data_from_vector(source_pixel_data, vector)
-    distances_sum: float = 0.0
+    # before calculating the distances, we have to order the pixels with our vector
+    ordered_pixels1: tuple[tuple[int, int, int]] = order_pixels_from_vector(pixels1, vector)
+    ordered_pixels2: tuple[tuple[int, int, int]] = order_pixels_from_vector(pixels2, vector)
+    total_cost: float = 0.
 
-    # calculs the distances sum
-    for i in range(len(target_pixel_data)):
-        distances_sum += (pixel_data1_ordered[i][0] - pixel_data2_ordered[i][0]) ** 2 + \
-                    (pixel_data1_ordered[i][1] - pixel_data2_ordered[i][1]) ** 2 + \
-                    (pixel_data1_ordered[i][2] - pixel_data2_ordered[i][2]) ** 2
+    for i in range(len(pixels1)):
+        total_cost += (ordered_pixels1[i][0] - ordered_pixels2[i][0]) ** 2 + \
+                        (ordered_pixels1[i][1] - ordered_pixels2[i][1]) ** 2 + \
+                        (ordered_pixels1[i][2] - ordered_pixels2[i][2]) ** 2
 
-    return distances_sum
+    return total_cost
 
 
-def best_cost_vector(target_im: Image, source_im: Image, n: int) -> tuple[int, int, int]:
+def best_cost_vector(target_pixels: tuple[tuple[int, int, int]],
+                     source_pixels: tuple[tuple[int, int, int]],
+                     n: int = 10) -> tuple[int, int, int]:
     """
     Orders n times the source and target pixels according to a random vector.\n
-    Returns the vector with the lowest associated cost.\n
-    :param target_im: Image
-    :param source_im: Image
+    Returns the vector with the lowest associated cost between the two ordered sets.\n
+    :param target_pixels: tuple[tuple[int, int, int]]
+    :param source_pixels: tuple[tuple[int, int, int]]
     :param n: int
     :return: tuple[int, int, int]
     """
-    target_pixel_data: tuple[tuple[int, int, int]] = tuple(target_im.getdata())
-    source_pixel_data: tuple[tuple[int, int, int]] = tuple(source_im.getdata())
 
     print("initialization...\n")
-    best_vector: tuple[int, int, int] = random_vector(100)
-    best_cost: float = cost(target_pixel_data, source_pixel_data, best_vector)
-    costs: list[float] = []
+
+    best_vector: tuple[int, int, int] = random_vector()
+    best_cost: float = cost(target_pixels, source_pixels, best_vector)
 
     for i in range(n):
-        current_vector: tuple[int, int, int] = random_vector(100)
-        current_cost: float = cost(target_pixel_data, source_pixel_data, current_vector)
+        current_vector: tuple[int, int, int] = random_vector()
+        current_cost: float = cost(target_pixels, source_pixels, current_vector)
 
         if current_cost < best_cost:
             best_cost = current_cost
             best_vector = current_vector
 
-        costs.append(current_cost)
+        print("{}\tvector : {}\t\tcost : {}\t\tbest cost : {}".format(i + 1, current_vector, current_cost, best_cost))
 
-        print("{}\tvector : {}\t\tcost : {}\t\tbest cost : {}"
-                   .format(i + 1, current_vector, current_cost, best_cost))
-
-    quality: float = min(costs) / max(costs)
-    print("\nbest vector : {}\nquality : {}".format(best_vector, quality))
+    print("\nbest vector : {}".format(best_vector))
 
     return best_vector
 
 
-def color_transfer(target_im: Image, source_im: Image, loop_number: int) -> Image:
+def color_transfer(target_pixels: tuple[tuple[int, int, int]],
+                   source_pixels: tuple[tuple[int, int, int]]) -> tuple[tuple[int, int, int]]:
     """
     Executes a color transfert from the source to the target.\n
-    Returns the output image.\n
-    :param target_im: Image
-    :param source_im: Image
-    :param loop_number: int
-    :return: Image
+    Returns the output image pixels set.\n
+    :param target_pixels: tuple[tuple[int, int, int]]
+    :param source_pixels: tuple[tuple[int, int, int]]
+    :return: tuple[tuple[int, int, int]]
     """
 
     # we choose the vector which has the lowest cost when ordering the two images
-    best_vector: tuple[int, int, int] = best_cost_vector(target_im, source_im, loop_number)
+    best_vector: tuple[int, int, int] = best_cost_vector(target_pixels, source_pixels)
 
     # we order our images with the best vector, meaning that same rank pixels
     # of the target and the source will be as close as possible
-    target_ordered_pixel_data: tuple[tuple[int, int, int]] = order_data_from_vector(tuple(target_im.getdata()),
-                                                                                    best_vector, True)  # ranks save
-    source_ordered_pixel_data: tuple[tuple[int, int, int]] = order_data_from_vector(tuple(source_im.getdata()),
-                                                                                    best_vector)
+    target_ordered_pixels: tuple[tuple[int, int, int]] = order_pixels_from_vector(target_pixels, best_vector, True)
+    source_ordered_pixels: tuple[tuple[int, int, int]] = order_pixels_from_vector(source_pixels, best_vector)
 
     # orders pixels of the source according to their associated target pixels
-    pixel_data_output: list[int] = [0] * len(target_ordered_pixel_data)
-    for i in range(len(target_ordered_pixel_data)):
-        pixel_data_output[ranks[i]] = source_ordered_pixel_data[i]  # magic
+    output_pixels: list[tuple[int, int, int]] = [(0, 0, 0)] * len(target_ordered_pixels)
+    for i in range(len(target_ordered_pixels)):
+        output_pixels[indexes[i]] = source_ordered_pixels[i]  # magic
 
-    output_im: Image = Image.new(target_im.mode, target_im.size)
-    output_im.putdata(pixel_data_output)
-
-    return output_im
+    return tuple(output_pixels)
 
 
-def main(target_file_name: str, source_file_name: str, loop_number: int = 10) -> None:
+def main(target_file_name: str, source_file_name: str) -> None:
+
     target_im: Image = Image.open(target_file_name).convert("RGB")
     source_im: Image = Image.open(source_file_name).convert("RGB")
 
-    # because the two images must be at the same size for our transfer,
-    # we crop the biggest if they are not
-    if target_im.size != source_im.size:
-        if target_im.size[0] * target_im.size[1] > source_im.size[0] * source_im.size[1]:
-            target_im = target_im.crop((0, 0, source_im.size[0], source_im.size[1]))
-        else:
-            source_im = source_im.crop((0, 0, target_im.size[0], target_im.size[1]))
+    # the two images must have the same number of pixels for our transfer
+    if target_im.size[0] * target_im.size[1] != source_im.size[0] * source_im.size[1]:
+        sys.exit("The two images must have the same number of pixels.")
 
-    output_im: Image = color_transfer(target_im, source_im, loop_number)
+    # images conversion into pixel sets
+    target_pixels: tuple[tuple[int, int, int]] = tuple(target_im.getdata())
+    source_pixels: tuple[tuple[int, int, int]] = tuple(source_im.getdata())
+
+    # main program
+    output_pixels: tuple[tuple[int, int, int]] = color_transfer(target_pixels, source_pixels)
+
+    # pixel set to image
+    output_im: Image = Image.new(target_im.mode, target_im.size)
+    output_im.putdata(output_pixels)
 
     output_im.save("output.png")
     output_im.show()
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 3:
-        main(sys.argv[1], sys.argv[2], int(sys.argv[3]))
-    elif len(sys.argv) > 2:
+    if len(sys.argv) > 2:
         main(sys.argv[1], sys.argv[2])
     else:
         sys.exit("not enough arguments")
