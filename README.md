@@ -1,4 +1,4 @@
-# <span style="color: red">WARNING : slow script</span>
+**WARNING : SLOW SCRIPT**
 
 # Transfert de couleurs entre images par coupe 1D
 
@@ -17,7 +17,7 @@ de manière à ce que le résultat ressemble le plus possible à l'image cible.
 
 Faisons un transfert des couleurs avec space.jpg en image cible et clouds.jpg en image source.
 ```
-python color_transfer.py monarch.png tulips.png
+python color_transfer.py space.jpg sky.jpg
 ```
 Sortie
 ```
