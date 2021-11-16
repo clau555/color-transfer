@@ -1,175 +1,105 @@
 import sys
-from random import randint
-from typing import Union
-
+import numpy as np
 from PIL import Image
+from tqdm import tqdm
 
 
-indexes: list[int] = []  # is used to store the orignal indexes of each pixels of the target image
-
-
-def random_vector(amplitude: int = 100) -> tuple[int, int, int]:
+def sorted_pixels_from_vector(pixels, vector):
     """
-    Returns a random vector.\n
-    :param amplitude: int
-    :return: tuple[int, int, int]
+    Returns the sorted pixels array and the indices that would sort them.\n
+    Sorts all pixels in the pixels array according to their dot products with the vector,
+    ie their projection on the vector.\n
+    :param pixels: Pixels array to sort.
+    :param vector: 3 dimensional vector.
+    :return: The sorted pixels array, and the sorting indices array.
     """
-    maximum: int = amplitude // 2
-    minimum: int = -maximum
-    return randint(minimum, maximum), randint(minimum, maximum), randint(minimum, maximum)
+    sorted_indexes = np.argsort(pixels.dot(vector))
+    sorted_pixels = pixels[sorted_indexes]
+    return sorted_pixels, sorted_indexes
 
 
-def order_pixels_from_vector(pixels: tuple[tuple[int, int, int]],
-                             vector: tuple[int, int, int],
-                             save_indexes: bool = False) -> tuple[tuple[int, int, int]]:
+def cost(pixels_1, pixels_2):
     """
-    Orders a pixel set according to their orthographic projection on a vector.\n
-    :param pixels: tuple[tuple[int, int, int]]
-    :param vector: tuple[int, int, int]
-    :param save_indexes: bool
-    :return: tuple[tuple[int, int, int]]
+    Returns the cost between two array of pixels.\n
+    The cost is the sum of all the distances separating each corresponding pixels between the two sets.\n
+    The distance between two pixels is their difference squared.\n
+    :param pixels_1: Pixels array.
+    :param pixels_2: Pixels array.
+    :return: The cost between the two sets.
     """
-    global indexes
+    return np.sum((pixels_1 - pixels_2) ** 2)
 
+
+def random_transport_draw(target_pixels, source_pixels):
     """
-    each element of ranked_pixels is composed as follow :
-    [   
-        pixel: tuple[int, int, int],
-        dot_product: int,
-        index: int
-    ]
-    pixel is the original image pixel rgb values
-    dot_product is the dot product of pixel and vector
-    index is the original index of the pixel in its image
+    Returns the cost of a transport between the two pixel sets, determined randomly by a vector.\n
+    Returns also the sorted source pixels set, with its sorted indexes.\n
+    :param target_pixels: Targeted image pixels array.
+    :param source_pixels: Source image pixels array.
+    :return: Tuple composed of
+    the cost of the transport between the two pixels sets,
+    pixels set sorted according to a random vector,
+    and sorted indices of the the pixel set.
     """
-    ranked_pixels: list[list[Union[tuple, int]]] = []
-    for i in range(len(pixels)):
-
-        dot_product: int = pixels[i][0] * vector[0] + \
-                           pixels[i][1] * vector[1] + \
-                           pixels[i][2] * vector[2]
-
-        ranked_pixels.append([pixels[i], dot_product, i])
-
-    # sorts pixels according to their dot product
-    ranked_pixels.sort(key=lambda data: data[1])
-
-    # reconstructs the ranked pixels
-    ordered_pixels: list[tuple[int, int, int]] = [(0, 0, 0)] * len(pixels)
-    for i in range(len(pixels)):
-        ordered_pixels[i] = ranked_pixels[i][0]
-
-        # saves original pixels ranks after sorting
-        # this is used later when reorganising sorted pixels
-        if save_indexes:
-            indexes.append(ranked_pixels[i][2])
-
-    return tuple(ordered_pixels)
+    vector = np.random.rand(3)
+    sorted_target_pixels, sorted_indexes = sorted_pixels_from_vector(target_pixels, vector)
+    sorted_source_pixels = sorted_pixels_from_vector(source_pixels, vector)[0]
+    transport_cost = cost(sorted_target_pixels, sorted_source_pixels)
+    return transport_cost, sorted_source_pixels, sorted_indexes
 
 
-def cost(pixels1: tuple[tuple[int, int, int]],
-         pixels2: tuple[tuple[int, int, int]],
-         vector: tuple[int, int, int]) -> float:
+def color_transfer(target_pixels, source_pixels, n=40):
     """
-    Returns the cost between two sets of pixels.\n
-    :param pixels1: tuple[tuple[int, int, int]]
-    :param pixels2: tuple[tuple[int, int, int]]
-    :param vector: tuple[int, int, int]
-    :return: float
+    Returns the resulting pixel array of a color transfer from the source pixel array to the target pixel array.\n
+    :param target_pixels: Targeted pixels array, whose colors must change.
+    :param source_pixels: Source pixels array, used as a palette.
+    :param n: Number of random transport to try.
+    :return: Output pixels array.
     """
 
-    # before calculating the distances, we have to order the pixels with our vector
-    ordered_pixels1: tuple[tuple[int, int, int]] = order_pixels_from_vector(pixels1, vector)
-    ordered_pixels2: tuple[tuple[int, int, int]] = order_pixels_from_vector(pixels2, vector)
-    total_cost: float = 0.
+    print("initialization")
 
-    for i in range(len(pixels1)):
-        total_cost += (ordered_pixels1[i][0] - ordered_pixels2[i][0]) ** 2 + \
-                        (ordered_pixels1[i][1] - ordered_pixels2[i][1]) ** 2 + \
-                        (ordered_pixels1[i][2] - ordered_pixels2[i][2]) ** 2
+    # the best vector is the vector with the lowest associated cost,
+    # we initialize it randomly with its associated pixels set
+    best_cost, best_sorted_pixels, best_sorted_indexes = random_transport_draw(target_pixels, source_pixels)
 
-    return total_cost
-
-
-def best_cost_vector(target_pixels: tuple[tuple[int, int, int]],
-                     source_pixels: tuple[tuple[int, int, int]],
-                     n: int = 10) -> tuple[int, int, int]:
-    """
-    Orders n times the source and target pixels according to a random vector.\n
-    Returns the vector with the lowest associated cost between the two ordered sets.\n
-    :param target_pixels: tuple[tuple[int, int, int]]
-    :param source_pixels: tuple[tuple[int, int, int]]
-    :param n: int
-    :return: tuple[int, int, int]
-    """
-
-    print("initialization...\n")
-
-    best_vector: tuple[int, int, int] = random_vector()
-    best_cost: float = cost(target_pixels, source_pixels, best_vector)
-
-    for i in range(n):
-        current_vector: tuple[int, int, int] = random_vector()
-        current_cost: float = cost(target_pixels, source_pixels, current_vector)
+    for _ in tqdm(range(n), desc="processing"):
+        current_cost, current_sorted_pixels, current_sorted_indexes = random_transport_draw(target_pixels, source_pixels)
 
         if current_cost < best_cost:
             best_cost = current_cost
-            best_vector = current_vector
+            best_sorted_pixels = current_sorted_pixels
+            best_sorted_indexes = current_sorted_indexes
 
-        print("{}\tvector : {}\t\tcost : {}\t\tbest cost : {}".format(i + 1, current_vector, current_cost, best_cost))
+    # reorganization of each pixels according to their corresponding pixel on target image
+    output_pixels = np.zeros(best_sorted_pixels.shape).astype(int)
+    output_pixels[best_sorted_indexes] = best_sorted_pixels
 
-    print("\nbest vector : {}".format(best_vector))
+    print("color transfer finished")
 
-    return best_vector
-
-
-def color_transfer(target_pixels: tuple[tuple[int, int, int]],
-                   source_pixels: tuple[tuple[int, int, int]]) -> tuple[tuple[int, int, int]]:
-    """
-    Executes a color transfert from the source to the target.\n
-    Returns the output image pixels set.\n
-    :param target_pixels: tuple[tuple[int, int, int]]
-    :param source_pixels: tuple[tuple[int, int, int]]
-    :return: tuple[tuple[int, int, int]]
-    """
-
-    # we choose the vector which has the lowest cost when ordering the two images
-    best_vector: tuple[int, int, int] = best_cost_vector(target_pixels, source_pixels)
-
-    # we order our images with the best vector, meaning that same rank pixels
-    # of the target and the source will be as close as possible
-    target_ordered_pixels: tuple[tuple[int, int, int]] = order_pixels_from_vector(target_pixels, best_vector, True)
-    source_ordered_pixels: tuple[tuple[int, int, int]] = order_pixels_from_vector(source_pixels, best_vector)
-
-    # orders pixels of the source according to their associated target pixels
-    output_pixels: list[tuple[int, int, int]] = [(0, 0, 0)] * len(target_ordered_pixels)
-    for i in range(len(target_ordered_pixels)):
-        output_pixels[indexes[i]] = source_ordered_pixels[i]  # magic
-
-    return tuple(output_pixels)
+    return output_pixels
 
 
-def main(target_file_name: str, source_file_name: str) -> None:
+def main(target_file_name, source_file_name):
+    target_im = Image.open(target_file_name).convert("RGB")
+    source_im = Image.open(source_file_name).convert("RGB")
 
-    target_im: Image = Image.open(target_file_name).convert("RGB")
-    source_im: Image = Image.open(source_file_name).convert("RGB")
-
-    # the two images must have the same number of pixels for our transfer
+    # the two images must be the same size
     if target_im.size[0] * target_im.size[1] != source_im.size[0] * source_im.size[1]:
         sys.exit("The two images must have the same number of pixels.")
 
-    # images conversion into pixel sets
-    target_pixels: tuple[tuple[int, int, int]] = tuple(target_im.getdata())
-    source_pixels: tuple[tuple[int, int, int]] = tuple(source_im.getdata())
+    # images conversion into pixels array
+    target_pixels = np.array(target_im.getdata())
+    source_pixels = np.array(source_im.getdata())
 
     # main program
-    output_pixels: tuple[tuple[int, int, int]] = color_transfer(target_pixels, source_pixels)
+    output_pixels = color_transfer(target_pixels, source_pixels)
 
-    # pixel set to image
-    output_im: Image = Image.new(target_im.mode, target_im.size)
-    output_im.putdata(output_pixels)
+    # converting pixels output to a new image
+    output_pixels = np.reshape(output_pixels, (target_im.size[1], target_im.size[0], 3))
+    output_im = Image.fromarray(output_pixels.astype(np.uint8))
 
-    output_im.save("output.png")
+    output_im.save("output.jpg")
     output_im.show()
 
 
