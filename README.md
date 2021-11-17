@@ -13,7 +13,9 @@ closely as possible.
 
 ## Usage example
 
-```python color_transfer.py space.jpg sky.jpg```
+```python color_transfer.py space.jpg sky.jpg -sa output.jpg -sh```<br>
+The colors of sky.jpg will be transferred to space.jpg, the output image will be stored inside output.jpg,
+and a preview of the output will be show at the end of the execution.
 
 Inputs
 
