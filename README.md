@@ -7,6 +7,10 @@ closely as possible.
 
 ## Requirements
 
+```
+pip install -r requirements.txt
+```
+
 - [numpy](https://pypi.org/project/numpy/) ```pip install numpy```
 - [pillow](https://pypi.org/project/Pillow/) ```pip install pillow```
 - [tqmd](https://pypi.org/project/tqdm/) ```pip install tqmd```
