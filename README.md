@@ -5,7 +5,7 @@ Here, a pixel of the source can be used only one time, and the two images must b
 The operation then boils down to rearranging the pixels of the source image to make it resemble the target image as 
 closely as possible.
 
-## Packages
+## Requirements
 
 - [numpy](https://pypi.org/project/numpy/) ```pip install numpy```
 - [pillow](https://pypi.org/project/Pillow/) ```pip install pillow```
