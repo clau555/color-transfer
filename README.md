@@ -13,7 +13,7 @@ pip install -r requirements.txt
 
 - [numpy](https://pypi.org/project/numpy/) ```pip install numpy```
 - [pillow](https://pypi.org/project/Pillow/) ```pip install pillow```
-- [tqmd](https://pypi.org/project/tqdm/) ```pip install tqmd```
+- [tqdm](https://pypi.org/project/tqdm/) ```pip install tqdm```
 
 ## Use
 
@@ -32,19 +32,19 @@ optional arguments:
 ## Example
 
 ```
-python color_transfer.py space.jpg sky.jpg -sa output.jpg -sh
+python color_transfer.py inputs/space.jpg intputs/sky.jpg -sa outputs/output.jpg -sh
 ```
-The colors of `sky.jpg` will be transferred to `space.jpg`, the output image will be stored inside `output.jpg`,
-and a preview of the output will be show at the end of the execution.
+The colors of `sky.jpg` will be transferred to `space.jpg`, the output image will be stored inside `output.jpg` in the
+outputs' directory, and a preview of the output will be show at the end of the execution.
 
 ### Inputs
 
-![space](space.jpg)
-![sky](sky.jpg)
+![space](inputs/space.jpg)
+![sky](inputs/sky.jpg)
 
 ### Output
 
-![output](output.jpg)
+![output](outputs/output.jpg)
 
 ## Method
 
