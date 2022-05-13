@@ -53,51 +53,32 @@ def find_best_vector(target_pixels, source_pixels):
     :param source_pixels: Pixels array to sort.
     :return: Best vector.
     """
-    best_x_cost = sort_and_cost(target_pixels, source_pixels, np.array((0, 0, 1), dtype=float))
-    best_y_cost = sort_and_cost(target_pixels, source_pixels, np.array((1, 0, 0), dtype=float))
-    best_z_cost = sort_and_cost(target_pixels, source_pixels, np.array((0, 1, 0), dtype=float))
-    best_x_vector = best_y_vector = best_z_vector = np.zeros(3)
+    axis_vectors = np.identity(3)
+    axis_vectors[[0, 2]] = axis_vectors[[2, 0]]
+    axis_vectors[[1, 2]] = axis_vectors[[2, 1]]
 
-    # searching the best x-axis angle
-    for angle in tqdm(range(1, 91), desc="Searching x angle"):
+    best_costs = np.array([sort_and_cost(target_pixels, source_pixels, vector) for vector in axis_vectors])
+    best_vectors = np.zeros((3, 3))
 
-        rad = np.deg2rad(angle)
-        vector = np.array((0, np.cos(rad), np.sin(rad)))  # rotating around the x-axis
-        cost_ = sort_and_cost(target_pixels, source_pixels, vector)
+    axis_strings = ['x', 'y', 'z']
 
-        if cost_ < best_x_cost:
-            best_x_cost = cost_
-        else:
-            best_x_vector = vector
-            break
+    for axis in range(3):
+        for angle in tqdm(range(1, 91), desc=f"Searching {axis_strings[axis]} angle"):
+            rad = np.deg2rad(angle)
 
-    # searching the best y-axis angle
-    for angle in tqdm(range(1, 91), desc="Searching y angle"):
+            vector = [np.cos(rad), np.sin(rad)]
+            vector.insert(axis, 0)
+            vector = np.array(vector, dtype=float)
 
-        rad = np.deg2rad(angle)
-        vector = np.array((np.cos(rad), 0, np.sin(rad)))  # rotating around the y-axis
-        cost_ = sort_and_cost(target_pixels, source_pixels, vector)
+            cost_ = sort_and_cost(target_pixels, source_pixels, vector)
 
-        if cost_ < best_y_cost:
-            best_y_cost = cost_
-        else:
-            best_y_vector = vector
-            break
+            if cost_ < best_costs[axis]:
+                best_costs[axis] = cost_
+                best_vectors[axis] = vector
+            else:
+                break
 
-    # finding the best z-axis angle
-    for angle in tqdm(range(1, 91), desc="Searching z angle"):
-
-        rad = np.deg2rad(angle)
-        vector = np.array((np.cos(rad), np.sin(rad), 0))  # rotating around the z-axis
-        cost_ = sort_and_cost(target_pixels, source_pixels, vector)
-
-        if cost_ < best_z_cost:
-            best_z_cost = cost_
-        else:
-            best_z_vector = vector
-            break
-
-    best_vector = best_y_vector + best_x_vector + best_z_vector
+    best_vector = np.sum(best_vectors, axis=0)
     best_vector /= np.linalg.norm(best_vector)  # converting to unit vector
 
     print(f"Best sorting vector: {np.round(best_vector, 2)}")
