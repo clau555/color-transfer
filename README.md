@@ -1,7 +1,7 @@
-# Color transfer using one-dimensional optimal transport
+# Color transfer
 
-A color transfer consists of giving the colors of a source image to a target image.<br>
-Here, a pixel of the source can be used only one time, and the two images must be of the same area.<br>
+A color transfer consists of giving the colors of a source image to a target image.  
+**Here, a pixel of the source can be used only one time, and the two images must have the same area.**  
 The operation then boils down to rearranging the pixels of the source image to make it resemble the target image as 
 closely as possible.
 
@@ -48,17 +48,22 @@ outputs' directory, and a preview of the output will be show at the end of the e
 
 ## Method
 
+### One-dimensional optimal transport
+
 The transfer is made by sorting each image pixels according to their dot product with a certain vector.
 The two sorted lists of the source and target are then compared to make each pixel of same rank correspond to each 
 other.
 The source can then be rearranged according to these correspondences.
 
+### Optimal vector search
+
 To find the vector that would sort them best, the goal is to rotate a vector in all the positive directions and find the 
-one with the lowest associated cost.
+one with the lowest associated cost.  
 The search would be done by finding the three angles components of the vector.
-For each x, y and z angle, we start with a unit vector of 0° rotation around the current angle axis, and then compute
-its associated cost.
-Then, we increment the angle by 1°, and repeat the process until 90° at maximum.
-If at some point, the cost becomes higher than the previous one, meaning that we have found an optimal angle, we stop 
-the search and return the previous angle.
-Once each angle is found, we compute the unit vector corresponding to these angles, which is the best vector.
+For each x, y, z unit vectors, we increment them by an angle of 1° and look at their associated cost.
+We repeat the process until 90° in the worst case.
+If at some point, the cost becomes higher than the previous one, we stop the search and return the previous vector.  
+Once each component vector is found, we compute the corresponding unit vector, which is the best vector.
+
+Ultimately, the precision of the result vector depends on the angle precision that is incremented at each steps.
+But increasing the angle precision will also increase the computation time.
